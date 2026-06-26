@@ -32,6 +32,7 @@ const toggleSidebar = () => {
           display: 'flex',
           flexDirection: 'column',
           position: 'sticky',
+          top: 0,
           height: '100vh',
           flexShrink: 0,
           overflow: 'hidden'
@@ -79,7 +80,7 @@ const toggleSidebar = () => {
             <AppThemeSwitcher />
           </div>
         </ElHeader>
-        <ElMain style="padding: 20px">
+        <ElMain style="flex: 1; padding: 8px; overflow-x: auto">
           <slot />
         </ElMain>
       </ElContainer>
