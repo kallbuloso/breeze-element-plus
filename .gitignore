@@ -1,0 +1,5 @@
+/vendor
+composer.lock
+.agents
+.DS_Store
+Thumbs.db
