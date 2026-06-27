@@ -15,6 +15,8 @@ O pacote instala uma base opinativa para aplicacoes Laravel que usam Vue no fron
 - Suporte opcional a SSR para Inertia.
 - Migration de usuario com `is_owner`, `profile_photo_path` e `softDeletes`.
 - Seeder inicial com usuario de teste.
+- Senhas com Argon2id, pepper versionado e migracao automatica de hashes legados.
+- Sessao criptografada, hosts confiaveis e rate limit em camadas para login.
 
 ## Requisitos
 
@@ -113,6 +115,24 @@ php artisan breeze-element-plus:install api
 ```
 
 A stack API instala Sanctum, rotas, controllers, requests, testes e a estrutura de autenticacao compartilhada.
+
+## Seguranca de Senhas
+
+Durante a instalacao, o pacote gera um `HASH_PEPPER` aleatorio de 32 bytes e grava o valor somente no `.env`. O `.env.example` recebe apenas a variavel vazia e pode continuar versionado com seguranca.
+
+Os hashes usam Argon2id e recebem um identificador de versao, como `v1`. Hashes bcrypt ou Argon existentes continuam validos enquanto `HASH_ALLOW_LEGACY=true` e sao atualizados automaticamente depois de um login bem-sucedido.
+
+Para rotacionar o pepper, mova o identificador e segredo atuais para `HASH_PREVIOUS_PEPPERS`, defina um novo identificador e gere um novo segredo:
+
+```dotenv
+HASH_PEPPER_ID=v2
+HASH_PEPPER=novo-segredo
+HASH_PREVIOUS_PEPPERS=v1:segredo-anterior
+```
+
+Mais de um pepper anterior pode ser informado, separado por virgula. Mantenha os valores anteriores ate que os hashes ativos tenham sido migrados e execute `php artisan config:clear` depois de alterar essas variaveis.
+
+O instalador tambem habilita `SESSION_ENCRYPT=true`. `SESSION_SECURE_COOKIE` e ativado automaticamente quando `APP_URL` usa HTTPS; em producao, use sempre uma URL HTTPS e configure `TRUSTED_PROXIES` apenas com proxies controlados.
 
 ## Usuario de Teste
 

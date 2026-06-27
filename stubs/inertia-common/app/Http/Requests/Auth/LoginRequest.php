@@ -43,13 +43,16 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            foreach ($this->rateLimits() as $limit) {
+                RateLimiter::hit($limit['key'], $limit['decaySeconds']);
+            }
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
 
+        // Keep broader counters so a successful login cannot reset abuse from this IP or account.
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -60,13 +63,19 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        $seconds = 0;
+
+        foreach ($this->rateLimits() as $limit) {
+            if (RateLimiter::tooManyAttempts($limit['key'], $limit['maxAttempts'])) {
+                $seconds = max($seconds, RateLimiter::availableIn($limit['key']));
+            }
+        }
+
+        if ($seconds === 0) {
             return;
         }
 
         event(new Lockout($this));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
             'email' => trans('auth.throttle', [
@@ -81,6 +90,35 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return $this->rateLimits()[0]['key'];
+    }
+
+    /**
+     * @return array<int, array{key: string, maxAttempts: int, decaySeconds: int}>
+     */
+    protected function rateLimits(): array
+    {
+        $email = Str::lower(trim((string) $this->input('email')));
+        $ip = (string) ($this->ip() ?? 'unknown');
+        $emailKey = hash('sha256', $email);
+        $ipKey = hash('sha256', $ip);
+
+        return [
+            [
+                'key' => 'login:identity:'.hash('sha256', $email.'|'.$ip),
+                'maxAttempts' => 5,
+                'decaySeconds' => 60,
+            ],
+            [
+                'key' => 'login:ip:'.$ipKey,
+                'maxAttempts' => 20,
+                'decaySeconds' => 60,
+            ],
+            [
+                'key' => 'login:email:'.$emailKey,
+                'maxAttempts' => 50,
+                'decaySeconds' => 3600,
+            ],
+        ];
     }
 }

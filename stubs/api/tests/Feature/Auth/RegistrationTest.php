@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,5 +21,9 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertNoContent();
+        $this->assertStringStartsWith(
+            '$peppered$'.config('hashing.pepper.id').'$',
+            User::where('email', 'test@example.com')->value('password'),
+        );
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -29,6 +30,21 @@ test('users can not authenticate with invalid password', function () {
     ]);
 
     $this->assertGuest();
+});
+
+test('legacy password is rehashed after login', function () {
+    $user = User::factory()->create([
+        'password' => Hash::driver('bcrypt')->make('password'),
+    ]);
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticated();
+    expect($user->refresh()->password)
+        ->toStartWith('$peppered$'.config('hashing.pepper.id').'$');
 });
 
 test('users can logout', function () {

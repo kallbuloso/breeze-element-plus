@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -40,6 +41,24 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertGuest();
+    }
+
+    public function test_legacy_password_is_rehashed_after_login(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::driver('bcrypt')->make('password'),
+        ]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $this->assertStringStartsWith(
+            '$peppered$'.config('hashing.pepper.id').'$',
+            $user->refresh()->password,
+        );
     }
 
     public function test_users_can_logout(): void

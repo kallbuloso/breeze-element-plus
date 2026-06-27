@@ -5,6 +5,7 @@ namespace Kallbuloso\BreezeElementPlus\Console;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\ServiceProvider;
 use Pest\TestSuite;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -13,6 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
 
 #[AsCommand(name: 'breeze-element-plus:install')]
@@ -29,6 +31,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
                             {--pest : Indicate that Pest should be installed}
                             {--ssr : Indicates if Inertia SSR support should be installed}
                             {--eslint : Indicates if ESLint with Prettier should be installed}
+                            {--lang=* : Languages to install (en, es, pt, pt_BR)}
                             {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
 
     /**
@@ -39,12 +42,21 @@ class InstallCommand extends Command implements PromptsForMissingInput
     protected $description = 'Install the Breeze Element Plus controllers and resources';
 
     /**
+     * @var array<int, string>
+     */
+    protected array $languages = ['pt_BR'];
+
+    /**
      * Execute the console command.
      *
      * @return int|null
      */
     public function handle()
     {
+        if (! $this->resolveLanguages()) {
+            return 1;
+        }
+
         if ($this->argument('stack') === 'vue') {
             return $this->installInertiaVueStack();
         } elseif ($this->argument('stack') === 'api') {
@@ -54,6 +66,39 @@ class InstallCommand extends Command implements PromptsForMissingInput
         $this->components->error('Invalid stack. Supported stacks are [vue] and [api].');
 
         return 1;
+    }
+
+    protected function resolveLanguages(): bool
+    {
+        $supported = [
+            'en' => 'English',
+            'es' => 'Español',
+            'pt' => 'Português',
+            'pt_BR' => 'Português (Brasil)',
+        ];
+        $languages = array_values(array_filter((array) $this->option('lang')));
+
+        if ($languages === [] && $this->input->isInteractive()) {
+            $languages = multiselect(
+                label: 'Which languages would you like to install?',
+                options: $supported,
+                default: ['pt_BR'],
+                required: true,
+            );
+        }
+
+        $languages = $languages === [] ? ['pt_BR'] : array_values(array_unique($languages));
+        $invalid = array_diff($languages, array_keys($supported));
+
+        if ($invalid !== []) {
+            $this->components->error('Invalid languages: '.implode(', ', $invalid).'. Supported languages are: '.implode(', ', array_keys($supported)).'.');
+
+            return false;
+        }
+
+        $this->languages = $languages;
+
+        return true;
     }
 
     /**
@@ -326,6 +371,265 @@ class InstallCommand extends Command implements PromptsForMissingInput
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/factories', database_path('factories'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/migrations', database_path('migrations'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/seeders', database_path('seeders'));
+    }
+
+    protected function installLocalizationScaffolding(bool $withFrontend = false): void
+    {
+        $files = new Filesystem;
+        $default = in_array('pt_BR', $this->languages, true) ? 'pt_BR' : $this->languages[0];
+        $fallback = in_array('en', $this->languages, true) ? 'en' : $default;
+        $fakerLocales = [
+            'en' => 'en_US',
+            'es' => 'es_ES',
+            'pt' => 'pt_PT',
+            'pt_BR' => 'pt_BR',
+        ];
+        $labels = [
+            'en' => 'English',
+            'es' => 'Español',
+            'pt' => 'Português',
+            'pt_BR' => 'Português (Brasil)',
+        ];
+
+        foreach ($this->languages as $language) {
+            $files->copyDirectory(
+                __DIR__.'/../../stubs/localization/lang/'.$language,
+                lang_path($language),
+            );
+        }
+
+        $supported = collect($this->languages)
+            ->map(fn (string $language) => "        '$language',")
+            ->implode(PHP_EOL);
+        $configuredLabels = collect($this->languages)
+            ->map(fn (string $language) => "        '$language' => '".$labels[$language]."',")
+            ->implode(PHP_EOL);
+
+        $files->put(
+            config_path('locales.php'),
+            '<?php'.PHP_EOL
+            .PHP_EOL
+            .'return ['.PHP_EOL
+            ."    'default' => '$default',".PHP_EOL
+            ."    'supported' => [".PHP_EOL.$supported.PHP_EOL.'    ],'.PHP_EOL
+            ."    'labels' => [".PHP_EOL.$configuredLabels.PHP_EOL.'    ],'.PHP_EOL
+            .'];'.PHP_EOL,
+        );
+
+        foreach (['.env', '.env.example'] as $filename) {
+            $path = base_path($filename);
+
+            if (! $files->exists($path)) {
+                continue;
+            }
+
+            $content = $files->get($path);
+            $content = $this->setEnvironmentValue($content, 'APP_LOCALE', $default);
+            $content = $this->setEnvironmentValue($content, 'APP_FALLBACK_LOCALE', $fallback);
+            $content = $this->setEnvironmentValue($content, 'APP_FAKER_LOCALE', $fakerLocales[$default]);
+            $files->put($path, $content);
+        }
+
+        if (! $withFrontend) {
+            return;
+        }
+
+        $files->copyDirectory(
+            __DIR__.'/../../stubs/localization/app/Http/Middleware',
+            app_path('Http/Middleware'),
+        );
+        $files->ensureDirectoryExists(resource_path('js/locales'));
+
+        $identifiers = [
+            'en' => 'en',
+            'es' => 'es',
+            'pt' => 'pt',
+            'pt_BR' => 'ptBR',
+        ];
+        $imports = [];
+        $entries = [];
+
+        foreach ($this->languages as $language) {
+            $identifier = $identifiers[$language];
+
+            $files->copy(
+                __DIR__.'/../../stubs/localization/resources/js/locales/'.$language.'.js',
+                resource_path('js/locales/'.$language.'.js'),
+            );
+
+            $imports[] = "import $identifier from './$language'";
+            $entries[] = $language === $identifier
+                ? "  $language"
+                : "  $language: $identifier";
+        }
+
+        $files->put(
+            resource_path('js/locales/index.js'),
+            implode(PHP_EOL, $imports).PHP_EOL
+            .PHP_EOL
+            .'export const locales = {'.PHP_EOL.implode(','.PHP_EOL, $entries).PHP_EOL.'}'.PHP_EOL
+            .PHP_EOL
+            ."export const defaultLocale = '$default'".PHP_EOL
+            .PHP_EOL
+            .'export const resolveLocale = (locale) => locales[locale] ?? locales[defaultLocale]'.PHP_EOL,
+        );
+    }
+
+    /**
+     * Install password hashing and HTTP security defaults.
+     */
+    protected function installSecurityScaffolding(): void
+    {
+        $files = new Filesystem;
+
+        $files->copyDirectory(__DIR__.'/../../stubs/security/app/Hashing', app_path('Hashing'));
+        $files->copyDirectory(__DIR__.'/../../stubs/security/app/Providers', app_path('Providers'));
+        $files->copyDirectory(__DIR__.'/../../stubs/security/config', config_path());
+
+        ServiceProvider::addProviderToBootstrapFile('App\\Providers\\HashServiceProvider');
+
+        $this->configureSecurityEnvironment();
+        $this->installSecurityMiddleware();
+        $this->runCommands([$this->artisanCommand('config:clear')]);
+    }
+
+    /**
+     * Generate and configure secrets without exposing them in .env.example.
+     */
+    protected function configureSecurityEnvironment(): void
+    {
+        $files = new Filesystem;
+
+        if (! $files->exists(base_path('.env')) && $files->exists(base_path('.env.example'))) {
+            $files->copy(base_path('.env.example'), base_path('.env'));
+        }
+
+        foreach (['.env', '.env.example'] as $filename) {
+            $path = base_path($filename);
+
+            if (! $files->exists($path)) {
+                continue;
+            }
+
+            $content = $files->get($path);
+            $isExample = $filename === '.env.example';
+            $appUrl = trim((string) $this->environmentValue($content, 'APP_URL'), " \t\n\r\0\x0B\"'");
+            $secureCookie = str_starts_with($appUrl, 'https://') ? 'true' : 'false';
+            $pepper = $isExample ? '' : $this->environmentValue($content, 'HASH_PEPPER');
+
+            if (! $isExample && blank($pepper)) {
+                $pepper = bin2hex(random_bytes(32));
+            }
+
+            $values = [
+                'HASH_DRIVER' => 'argon2id_pepper',
+                'HASH_PEPPER_ID' => 'v1',
+                'HASH_PEPPER' => (string) $pepper,
+                'HASH_PREVIOUS_PEPPERS' => '',
+                'HASH_ALLOW_LEGACY' => 'true',
+                'HASH_VERIFY' => 'true',
+                'ARGON_MEMORY' => '32768',
+                'ARGON_TIME' => '3',
+                'ARGON_THREADS' => '1',
+                'SESSION_ENCRYPT' => 'true',
+                'SESSION_SECURE_COOKIE' => $secureCookie,
+                'SESSION_HTTP_ONLY' => 'true',
+                'SESSION_SAME_SITE' => 'lax',
+                'TRUSTED_PROXIES' => '',
+            ];
+
+            foreach ($values as $key => $value) {
+                $preserve = ! $isExample && in_array($key, [
+                    'HASH_PEPPER_ID',
+                    'HASH_PREVIOUS_PEPPERS',
+                    'HASH_ALLOW_LEGACY',
+                    'SESSION_SECURE_COOKIE',
+                    'SESSION_HTTP_ONLY',
+                    'SESSION_SAME_SITE',
+                    'TRUSTED_PROXIES',
+                ], true);
+
+                $content = $this->setEnvironmentValue($content, $key, $value, ! $preserve);
+            }
+
+            $files->put($path, $content);
+        }
+    }
+
+    protected function environmentValue(string $content, string $key): ?string
+    {
+        if (! preg_match('/^'.preg_quote($key, '/').'=(.*)$/m', $content, $matches)) {
+            return null;
+        }
+
+        return trim($matches[1]);
+    }
+
+    protected function setEnvironmentValue(string $content, string $key, string $value, bool $overwrite = true): string
+    {
+        $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
+
+        if (preg_match($pattern, $content)) {
+            return $overwrite
+                ? preg_replace($pattern, $key.'='.$value, $content, 1) ?? $content
+                : $content;
+        }
+
+        return rtrim($content).PHP_EOL.$key.'='.$value.PHP_EOL;
+    }
+
+    protected function installSecurityMiddleware(): void
+    {
+        $bootstrapApp = file_get_contents(base_path('bootstrap/app.php'));
+
+        if (! str_contains($bootstrapApp, 'use Illuminate\Http\Request;')) {
+            $bootstrapApp = preg_replace(
+                '/use Illuminate\\\\Foundation\\\\Configuration\\\\Middleware;\R/',
+                'use Illuminate\Foundation\Configuration\Middleware;'.PHP_EOL.'use Illuminate\Http\Request;'.PHP_EOL,
+                $bootstrapApp,
+                1,
+            ) ?? $bootstrapApp;
+        }
+
+        $configuration = '';
+
+        if (! str_contains($bootstrapApp, '$middleware->trustHosts(')) {
+            $configuration .= PHP_EOL.'        $middleware->trustHosts(at: null, subdomains: false);'.PHP_EOL;
+        }
+
+        if (! str_contains($bootstrapApp, "env('TRUSTED_PROXIES')")) {
+            $configuration .= PHP_EOL
+                ."        \$trustedProxies = env('TRUSTED_PROXIES');".PHP_EOL
+                .PHP_EOL
+                ."        if (filled(\$trustedProxies)) {".PHP_EOL
+                ."            \$middleware->trustProxies(".PHP_EOL
+                ."                at: \$trustedProxies === '*'".PHP_EOL
+                ."                    ? '*'".PHP_EOL
+                ."                    : array_map('trim', explode(',', \$trustedProxies)),".PHP_EOL
+                ."                headers: Request::HEADER_X_FORWARDED_FOR".PHP_EOL
+                ."                    | Request::HEADER_X_FORWARDED_HOST".PHP_EOL
+                ."                    | Request::HEADER_X_FORWARDED_PORT".PHP_EOL
+                ."                    | Request::HEADER_X_FORWARDED_PROTO,".PHP_EOL
+                ."            );".PHP_EOL
+                ."        }".PHP_EOL;
+        }
+
+        if ($configuration === '') {
+            return;
+        }
+
+        $stubs = [
+            '->withMiddleware(function (Middleware $middleware) {',
+            '->withMiddleware(function (Middleware $middleware): void {',
+        ];
+
+        $bootstrapApp = str_replace(
+            $stubs,
+            collect($stubs)->map(fn ($stub) => $stub.$configuration)->all(),
+            $bootstrapApp,
+        );
+
+        file_put_contents(base_path('bootstrap/app.php'), $bootstrapApp);
     }
 
     /**

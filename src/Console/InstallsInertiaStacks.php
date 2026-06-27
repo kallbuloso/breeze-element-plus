@@ -66,6 +66,8 @@ trait InstallsInertiaStacks
 
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Providers', app_path('Providers'));
         ServiceProvider::addProviderToBootstrapFile(\App\Providers\ToastServiceProvider::class);
+        $this->installSecurityScaffolding();
+        $this->installLocalizationScaffolding(true);
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Controllers', app_path('Http/Controllers'));
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Requests', app_path('Http/Requests'));
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Middleware', app_path('Http/Middleware'));
@@ -73,6 +75,7 @@ trait InstallsInertiaStacks
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Services', app_path('Services'));
 
         $this->installMiddleware([
+            '\App\Http\Middleware\SetLocale::class',
             '\App\Http\Middleware\HandleInertiaRequests::class',
             '\Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class',
         ]);
