@@ -75,6 +75,8 @@ trait InstallsInertiaStacks
             '\Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class',
         ]);
 
+        $this->installExceptionHandling();
+
         copy(__DIR__.'/../../stubs/inertia-vue/resources/views/app.blade.php', resource_path('views/app.blade.php'));
 
         @unlink(resource_path('views/welcome.blade.php'));
@@ -125,6 +127,69 @@ trait InstallsInertiaStacks
 
         $this->line('');
         $this->components->info('Breeze Element Plus scaffolding installed successfully.');
+    }
+
+    protected function installExceptionHandling(): void
+    {
+        $bootstrapApp = file_get_contents(base_path('bootstrap/app.php'));
+
+        if (! str_contains($bootstrapApp, "Inertia::render('Error'")) {
+            if (! str_contains($bootstrapApp, 'use Illuminate\Http\Request;')) {
+                $bootstrapApp = preg_replace(
+                    '/use Illuminate\\\\Foundation\\\\Configuration\\\\Middleware;\\R/',
+                    'use Illuminate\Foundation\Configuration\Middleware;'.PHP_EOL.'use Illuminate\Http\Request;'.PHP_EOL,
+                    $bootstrapApp,
+                    1
+                ) ?? $bootstrapApp;
+            }
+
+            if (! str_contains($bootstrapApp, 'use Inertia\Inertia;')) {
+                $bootstrapApp = preg_replace(
+                    '/use Illuminate\\\\Http\\\\Request;\\R/',
+                    'use Illuminate\Http\Request;'.PHP_EOL.'use Inertia\Inertia;'.PHP_EOL,
+                    $bootstrapApp,
+                    1
+                ) ?? $bootstrapApp;
+            }
+
+            if (! str_contains($bootstrapApp, 'use Symfony\Component\HttpFoundation\Response;')) {
+                $bootstrapApp = preg_replace(
+                    '/use Illuminate\\\\Http\\\\Request;\\R/',
+                    'use Illuminate\Http\Request;'.PHP_EOL.'use Symfony\Component\HttpFoundation\Response;'.PHP_EOL,
+                    $bootstrapApp,
+                    1
+                ) ?? $bootstrapApp;
+            }
+
+            $stubs = [
+                '->withExceptions(function (Exceptions $exceptions) {',
+                '->withExceptions(function (Exceptions $exceptions): void {',
+            ];
+
+            $bootstrapApp = str_replace(
+                $stubs,
+                collect($stubs)->transform(function ($stub) {
+                    return $stub.PHP_EOL
+                        ."        \$exceptions->respond(function (Response \$response, Throwable \$exception, Request \$request) {".PHP_EOL
+                        ."            if (! app()->environment(['local', 'testing']) && in_array(\$response->getStatusCode(), [403, 404, 500, 503])) {".PHP_EOL
+                        ."                return Inertia::render('Error', [".PHP_EOL
+                        ."                    'status' => \$response->getStatusCode(),".PHP_EOL
+                        ."                    'appName' => config('app.name'),".PHP_EOL
+                        ."                ])".PHP_EOL
+                        ."                    ->toResponse(\$request)".PHP_EOL
+                        ."                    ->setStatusCode(\$response->getStatusCode());".PHP_EOL
+                        ."            } elseif (\$response->getStatusCode() === 419) {".PHP_EOL
+                        ."                return back()->toast('Página expirada, tente novamente.', 'warning');".PHP_EOL
+                        ."            }".PHP_EOL
+                        .PHP_EOL
+                        ."            return \$response;".PHP_EOL
+                        ."        });".PHP_EOL;
+                })->all(),
+                $bootstrapApp
+            );
+
+            file_put_contents(base_path('bootstrap/app.php'), $bootstrapApp);
+        }
     }
 
     protected function installInertiaVueSsrStack(): void
