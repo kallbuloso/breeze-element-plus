@@ -3,6 +3,7 @@
 namespace Kallbuloso\BreezeElementPlus\Console;
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\ServiceProvider;
 
 trait InstallsInertiaStacks
 {
@@ -64,6 +65,7 @@ trait InstallsInertiaStacks
         $this->installAuthScaffolding();
 
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Providers', app_path('Providers'));
+        ServiceProvider::addProviderToBootstrapFile(\App\Providers\ToastServiceProvider::class);
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Controllers', app_path('Http/Controllers'));
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Requests', app_path('Http/Requests'));
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Http/Middleware', app_path('Http/Middleware'));
