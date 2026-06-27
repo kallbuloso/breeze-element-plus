@@ -1,14 +1,28 @@
 export const nav = [
   {
     key: 'dashboard',
-    label: 'Dashboard',
+    label: 'Dashboards',
     icon: 'ri:dashboard-line',
-    route: 'dashboard'
+    features: [
+      {
+        key: 'dashboard.main',
+        label: 'Principal',
+        icon: 'ri:bar-chart-box-line',
+        route: 'dashboard'
+      }
+    ]
   },
   {
-    key: 'profile',
-    label: 'Profile',
+    key: 'account',
+    label: 'Conta',
     icon: 'ri:user-settings-line',
-    route: 'profile.edit'
+    features: [
+      {
+        key: 'account.profile',
+        label: 'Perfil',
+        icon: 'ri:user-3-line',
+        route: 'profile.edit'
+      }
+    ]
   }
 ]

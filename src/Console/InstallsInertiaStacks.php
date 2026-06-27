@@ -81,6 +81,7 @@ trait InstallsInertiaStacks
 
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-vue/resources/js', resource_path('js'));
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-vue/resources/css', resource_path('css'));
+        $files->copyDirectory(__DIR__.'/../../stubs/inertia-vue/resources/images', resource_path('images'));
 
         if (! $this->installTests()) {
             return 1;

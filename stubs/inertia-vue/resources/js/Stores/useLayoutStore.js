@@ -2,6 +2,7 @@ import { useStorage } from '@vueuse/core'
 
 export const useLayoutStore = defineStore('layout', () => {
   const collapsed = useStorage('breeze-element-plus-sidebar-collapsed', false)
+  const activeNavKey = useStorage('breeze-element-plus-active-nav-key', 'dashboard')
   const mobileOpen = ref(false)
 
   const toggleCollapse = () => {
@@ -16,5 +17,5 @@ export const useLayoutStore = defineStore('layout', () => {
     mobileOpen.value = false
   }
 
-  return { collapsed, mobileOpen, toggleCollapse, toggleMobile, closeMobile }
+  return { activeNavKey, collapsed, mobileOpen, toggleCollapse, toggleMobile, closeMobile }
 })

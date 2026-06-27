@@ -48,11 +48,13 @@ const toggleSidebar = () => {
       </ElAside>
 
       <ElDrawer v-model="mobileOpen" direction="ltr" :with-header="false" size="248px" style="--el-drawer-padding-primary: 0">
-        <div style="height: 56px; display: flex; align-items: center; gap: 10px; padding: 0 18px; color: var(--el-color-primary)">
-          <ApplicationLogo style="width: 30px; height: 30px; fill: currentColor" />
-          <strong style="color: var(--el-text-color-primary)">{{ $page.props.appName }}</strong>
+        <div class="mobile-sidebar">
+          <div class="mobile-sidebar-header">
+            <ApplicationLogo style="width: 30px; height: 30px; fill: currentColor" />
+            <strong style="color: var(--el-text-color-primary)">{{ $page.props.appName }}</strong>
+          </div>
+          <AppNavMenu force-expanded />
         </div>
-        <AppNavMenu />
       </ElDrawer>
 
       <ElContainer style="flex: 1; display: flex; flex-direction: column; min-width: 0">
@@ -87,3 +89,23 @@ const toggleSidebar = () => {
     </div>
   </LayoutProvider>
 </template>
+
+<style scoped>
+.mobile-sidebar {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mobile-sidebar-header {
+  display: flex;
+  height: 56px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  color: var(--el-color-primary);
+}
+</style>
