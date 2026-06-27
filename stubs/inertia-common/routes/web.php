@@ -26,6 +26,13 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::post('/notify/{type}', function (string $type) {
+    return back()->toast('Notificação do servidor =)', $type);
+})
+    ->middleware(['auth', 'verified'])
+    ->whereIn('type', ['success', 'warning', 'error', 'info'])
+    ->name('notifications.preview');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
