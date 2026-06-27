@@ -1,8 +1,8 @@
 const defaultTitleByType = {
-  success: 'Success',
-  warning: 'Attention',
-  error: 'Error',
-  info: 'Info'
+  success: 'Sucesso',
+  warning: 'Atenção',
+  error: 'Erro',
+  info: 'Informação'
 }
 
 export const useToast = () => {
