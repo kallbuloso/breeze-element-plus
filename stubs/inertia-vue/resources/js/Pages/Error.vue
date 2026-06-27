@@ -1,69 +1,58 @@
 <script setup>
 const props = defineProps({ status: Number })
 
-const icon = computed(
-  () =>
-    ({
-      403: 'tabler:face-id-error',
-      404: 'tabler:error-404',
-      500: 'mdi:server-network-off',
-      503: 'gravity-ui:person-worker'
-    })[props.status]
-)
+const errors = {
+  403: {
+    icon: 'tabler:face-id-error',
+    headline: 'Erro 403',
+    title: 'Acesso proibido',
+    description: 'Você não tem permissão para acessar esta página.'
+  },
+  404: {
+    icon: 'tabler:error-404',
+    headline: 'Erro 404',
+    title: 'Página não encontrada',
+    description: 'Desculpe, a página que você está procurando não foi encontrada.'
+  },
+  500: {
+    icon: 'mdi:server-network-off',
+    headline: 'Erro 500',
+    title: 'Erro no servidor',
+    description: 'Algo deu errado em nossos servidores. Tente novamente em breve.'
+  },
+  503: {
+    icon: 'gravity-ui:person-worker',
+    headline: 'Erro 503',
+    title: 'Serviço indisponível',
+    description: 'Estamos em manutenção. Por favor, volte em alguns instantes.'
+  }
+}
 
-const headline = computed(
-  () =>
-    ({
-      403: 'Erro 403',
-      404: 'Erro 404',
-      500: 'Erro 500',
-      503: 'Erro 503'
-    })[props.status]
-)
-
-const title = computed(
-  () =>
-    ({
-      403: 'Acesso proibido',
-      404: 'Página não encontrada',
-      500: 'Erro no servidor',
-      503: 'Serviço indisponível'
-    })[props.status]
-)
-
-const description = computed(
-  () =>
-    ({
-      403: 'Você não tem permissão para acessar esta página.',
-      404: 'Desculpe, a página que você está procurando não foi encontrada.',
-      500: 'Algo deu errado em nossos servidores. Tente novamente em breve.',
-      503: 'Estamos em manutenção. Por favor, volte em alguns instantes.'
-    })[props.status]
-)
+const error = computed(() => errors[props.status] ?? errors[404])
 </script>
 
 <template layout="AuthLayout">
-  <Head :title="title" />
+  <Head :title="error.title" />
 
   <AppFormCard>
     <div style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 8px 0 24px">
       <AppIcon
-        :icon="icon"
+        :icon="error.icon"
         width="64"
         height="64"
         style="color: var(--el-color-primary); margin-bottom: 16px"
       />
 
       <p style="font-size: 13px; font-weight: 600; color: var(--el-text-color-secondary); letter-spacing: 0.05em; text-transform: uppercase; margin: 0 0 8px">
-        {{ headline }}
+        {{ error.headline }}
       </p>
 
       <h2 style="font-size: 20px; font-weight: 700; color: var(--el-text-color-primary); margin: 0 0 12px">
-        {{ title }}
+        {{ error.title }}
       </h2>
 
       <p style="font-size: 14px; color: var(--el-text-color-secondary); line-height: 1.6; margin: 0 0 28px">
-        {{ description }}
+        {{ error.description }}
       </p>
 
       <ElButton
