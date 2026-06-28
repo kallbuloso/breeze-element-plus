@@ -75,7 +75,6 @@ trait InstallsInertiaStacks
         $files->copyDirectory(__DIR__.'/../../stubs/inertia-common/app/Services', app_path('Services'));
 
         $this->installMiddleware([
-            '\App\Http\Middleware\SetLocale::class',
             '\App\Http\Middleware\HandleInertiaRequests::class',
             '\Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class',
         ]);

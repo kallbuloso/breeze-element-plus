@@ -17,6 +17,7 @@ O pacote instala uma base opinativa para aplicacoes Laravel que usam Vue no fron
 - Seeder inicial com usuario de teste.
 - Senhas com Argon2id, pepper versionado e migracao automatica de hashes legados.
 - Sessao criptografada, hosts confiaveis e rate limit em camadas para login.
+- Idioma da aplicacao selecionavel entre `en`, `es`, `pt` e `pt_BR`, com `pt_BR` por padrao.
 
 ## Requisitos
 
@@ -115,6 +116,22 @@ php artisan breeze-element-plus:install api
 ```
 
 A stack API instala Sanctum, rotas, controllers, requests, testes e a estrutura de autenticacao compartilhada.
+
+## Idiomas
+
+O instalador permite selecionar o idioma preferencial da aplicacao. Em modo interativo, `pt_BR` aparece como opcao padrao.
+
+Para uma instalacao nao interativa, informe o idioma com `--lang`:
+
+```bash
+php artisan breeze-element-plus:install vue --lang=en
+```
+
+Os idiomas disponiveis sao `en`, `es`, `pt` e `pt_BR`. Se `--lang` nao for informado em modo nao interativo, sera usado `pt_BR`. O instalador copia somente o diretorio escolhido para `lang/`, atualiza `APP_LOCALE`, `APP_FALLBACK_LOCALE` e `APP_FAKER_LOCALE`, e adiciona ao frontend somente o locale correspondente em `resources/js/locales/`.
+
+Na stack Vue, o idioma visual dos componentes e fornecido pelo locale correspondente do Element Plus.
+
+As traducoes espanholas e portuguesas foram adaptadas dos dados estaticos do [Laravel-Lang](https://github.com/Laravel-Lang/lang), distribuido sob licenca MIT. O aviso correspondente esta preservado em `stubs/localization/LICENSE-LARAVEL-LANG`.
 
 ## Seguranca de Senhas
 

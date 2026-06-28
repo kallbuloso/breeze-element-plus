@@ -1,3 +1,3 @@
-import en from 'element-plus/es/locale/lang/en'
+import locale from '@/locales'
 
-export const useLocale = () => en
+export const useLocale = () => locale

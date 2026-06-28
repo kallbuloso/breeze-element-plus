@@ -14,7 +14,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 
-use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
 
 #[AsCommand(name: 'breeze-element-plus:install')]
@@ -31,7 +30,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
                             {--pest : Indicate that Pest should be installed}
                             {--ssr : Indicates if Inertia SSR support should be installed}
                             {--eslint : Indicates if ESLint with Prettier should be installed}
-                            {--lang=* : Languages to install (en, es, pt, pt_BR)}
+                            {--lang= : Application language (en, es, pt, pt_BR)}
                             {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
 
     /**
@@ -41,10 +40,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
      */
     protected $description = 'Install the Breeze Element Plus controllers and resources';
 
-    /**
-     * @var array<int, string>
-     */
-    protected array $languages = ['pt_BR'];
+    protected string $language = 'pt_BR';
 
     /**
      * Execute the console command.
@@ -53,7 +49,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
      */
     public function handle()
     {
-        if (! $this->resolveLanguages()) {
+        if (! $this->resolveLanguage()) {
             return 1;
         }
 
@@ -68,7 +64,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
         return 1;
     }
 
-    protected function resolveLanguages(): bool
+    protected function resolveLanguage(): bool
     {
         $supported = [
             'en' => 'English',
@@ -76,27 +72,25 @@ class InstallCommand extends Command implements PromptsForMissingInput
             'pt' => 'Português',
             'pt_BR' => 'Português (Brasil)',
         ];
-        $languages = array_values(array_filter((array) $this->option('lang')));
+        $language = trim((string) $this->option('lang'));
 
-        if ($languages === [] && $this->input->isInteractive()) {
-            $languages = multiselect(
-                label: 'Which languages would you like to install?',
+        if ($language === '' && $this->input->isInteractive()) {
+            $language = select(
+                label: 'Which language would you like to install?',
                 options: $supported,
-                default: ['pt_BR'],
-                required: true,
+                default: 'pt_BR',
             );
         }
 
-        $languages = $languages === [] ? ['pt_BR'] : array_values(array_unique($languages));
-        $invalid = array_diff($languages, array_keys($supported));
+        $language = $language === '' ? 'pt_BR' : $language;
 
-        if ($invalid !== []) {
-            $this->components->error('Invalid languages: '.implode(', ', $invalid).'. Supported languages are: '.implode(', ', array_keys($supported)).'.');
+        if (! array_key_exists($language, $supported)) {
+            $this->components->error('Invalid language: '.$language.'. Supported languages are: '.implode(', ', array_keys($supported)).'.');
 
             return false;
         }
 
-        $this->languages = $languages;
+        $this->language = $language;
 
         return true;
     }
@@ -376,44 +370,20 @@ class InstallCommand extends Command implements PromptsForMissingInput
     protected function installLocalizationScaffolding(bool $withFrontend = false): void
     {
         $files = new Filesystem;
-        $default = in_array('pt_BR', $this->languages, true) ? 'pt_BR' : $this->languages[0];
-        $fallback = in_array('en', $this->languages, true) ? 'en' : $default;
         $fakerLocales = [
             'en' => 'en_US',
             'es' => 'es_ES',
             'pt' => 'pt_PT',
             'pt_BR' => 'pt_BR',
         ];
-        $labels = [
-            'en' => 'English',
-            'es' => 'Español',
-            'pt' => 'Português',
-            'pt_BR' => 'Português (Brasil)',
-        ];
+        $files->copyDirectory(
+            __DIR__.'/../../stubs/localization/lang/'.$this->language,
+            lang_path($this->language),
+        );
 
-        foreach ($this->languages as $language) {
-            $files->copyDirectory(
-                __DIR__.'/../../stubs/localization/lang/'.$language,
-                lang_path($language),
-            );
-        }
-
-        $supported = collect($this->languages)
-            ->map(fn (string $language) => "        '$language',")
-            ->implode(PHP_EOL);
-        $configuredLabels = collect($this->languages)
-            ->map(fn (string $language) => "        '$language' => '".$labels[$language]."',")
-            ->implode(PHP_EOL);
-
-        $files->put(
-            config_path('locales.php'),
-            '<?php'.PHP_EOL
-            .PHP_EOL
-            .'return ['.PHP_EOL
-            ."    'default' => '$default',".PHP_EOL
-            ."    'supported' => [".PHP_EOL.$supported.PHP_EOL.'    ],'.PHP_EOL
-            ."    'labels' => [".PHP_EOL.$configuredLabels.PHP_EOL.'    ],'.PHP_EOL
-            .'];'.PHP_EOL,
+        $files->copy(
+            __DIR__.'/../../stubs/localization/LICENSE-LARAVEL-LANG',
+            lang_path('LICENSE-LARAVEL-LANG'),
         );
 
         foreach (['.env', '.env.example'] as $filename) {
@@ -424,9 +394,9 @@ class InstallCommand extends Command implements PromptsForMissingInput
             }
 
             $content = $files->get($path);
-            $content = $this->setEnvironmentValue($content, 'APP_LOCALE', $default);
-            $content = $this->setEnvironmentValue($content, 'APP_FALLBACK_LOCALE', $fallback);
-            $content = $this->setEnvironmentValue($content, 'APP_FAKER_LOCALE', $fakerLocales[$default]);
+            $content = $this->setEnvironmentValue($content, 'APP_LOCALE', $this->language);
+            $content = $this->setEnvironmentValue($content, 'APP_FALLBACK_LOCALE', $this->language);
+            $content = $this->setEnvironmentValue($content, 'APP_FAKER_LOCALE', $fakerLocales[$this->language]);
             $files->put($path, $content);
         }
 
@@ -434,44 +404,15 @@ class InstallCommand extends Command implements PromptsForMissingInput
             return;
         }
 
-        $files->copyDirectory(
-            __DIR__.'/../../stubs/localization/app/Http/Middleware',
-            app_path('Http/Middleware'),
-        );
         $files->ensureDirectoryExists(resource_path('js/locales'));
-
-        $identifiers = [
-            'en' => 'en',
-            'es' => 'es',
-            'pt' => 'pt',
-            'pt_BR' => 'ptBR',
-        ];
-        $imports = [];
-        $entries = [];
-
-        foreach ($this->languages as $language) {
-            $identifier = $identifiers[$language];
-
-            $files->copy(
-                __DIR__.'/../../stubs/localization/resources/js/locales/'.$language.'.js',
-                resource_path('js/locales/'.$language.'.js'),
-            );
-
-            $imports[] = "import $identifier from './$language'";
-            $entries[] = $language === $identifier
-                ? "  $language"
-                : "  $language: $identifier";
-        }
+        $files->copy(
+            __DIR__.'/../../stubs/localization/resources/js/locales/'.$this->language.'.js',
+            resource_path('js/locales/'.$this->language.'.js'),
+        );
 
         $files->put(
             resource_path('js/locales/index.js'),
-            implode(PHP_EOL, $imports).PHP_EOL
-            .PHP_EOL
-            .'export const locales = {'.PHP_EOL.implode(','.PHP_EOL, $entries).PHP_EOL.'}'.PHP_EOL
-            .PHP_EOL
-            ."export const defaultLocale = '$default'".PHP_EOL
-            .PHP_EOL
-            .'export const resolveLocale = (locale) => locales[locale] ?? locales[defaultLocale]'.PHP_EOL,
+            "export { default } from './{$this->language}'".PHP_EOL,
         );
     }
 

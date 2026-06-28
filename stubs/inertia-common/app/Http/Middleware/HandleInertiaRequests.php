@@ -41,8 +41,6 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'appName' => config('app.name'),
-            'locale' => app()->getLocale(),
-            'locales' => config('locales.supported', [app()->getLocale()]),
             'flash' => [
                 'toasts' => fn () => Toast::all(),
             ],
