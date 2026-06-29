@@ -1,19 +1,20 @@
 <script setup>
 defineProps({ status: String })
 
+const { t } = useI18n({ useScope: 'global' })
 const submit = () => router.post(route('verification.send'))
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Email verification" />
+  <Head :title="t('auth.verifyEmail.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Verify your email</template>
-    <template #description> Thanks for signing up. Please verify your email address before continuing. If you did not receive the email, we can send another one. </template>
+    <template #title>{{ t('auth.verifyEmail.title') }}</template>
+    <template #description>{{ t('auth.verifyEmail.description') }}</template>
 
     <ElAlert
       v-if="status === 'verification-link-sent'"
-      title="A new verification link has been sent."
+      :title="t('auth.verifyEmail.sent')"
       type="success"
       show-icon
       :closable="false"
@@ -27,7 +28,7 @@ const submit = () => router.post(route('verification.send'))
             type="primary"
             native-type="submit"
           >
-            Resend verification email
+            {{ t('auth.verifyEmail.resend') }}
           </ElButton>
 
           <Link
@@ -36,7 +37,7 @@ const submit = () => router.post(route('verification.send'))
             as="button"
             style="font-size: 14px; color: var(--el-text-color-secondary); background: none; border: none; cursor: pointer"
           >
-            Log out
+            {{ t('auth.verifyEmail.logout') }}
           </Link>
         </div>
       </ElFormItem>

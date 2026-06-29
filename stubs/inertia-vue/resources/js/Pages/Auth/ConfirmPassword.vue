@@ -1,5 +1,6 @@
 <script setup>
 const form = useForm({ password: '' })
+const { t } = useI18n({ useScope: 'global' })
 const submit = () => {
   form.post(route('password.confirm'), {
     onFinish: () => form.reset('password')
@@ -8,18 +9,18 @@ const submit = () => {
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Confirm password" />
+  <Head :title="t('auth.confirmPassword.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Confirm password</template>
-    <template #description>This is a secure area. Please confirm your password before continuing.</template>
+    <template #title>{{ t('auth.confirmPassword.title') }}</template>
+    <template #description>{{ t('auth.confirmPassword.description') }}</template>
 
     <ElForm
       label-position="top"
       @submit.prevent="submit"
     >
       <ElFormItem
-        label="Password"
+        :label="t('common.password')"
         :error="form.errors.password"
       >
         <ElInput
@@ -37,7 +38,7 @@ const submit = () => {
           :loading="form.processing"
           style="width: 100%"
         >
-          Confirm
+          {{ t('auth.confirmPassword.submit') }}
         </ElButton>
       </ElFormItem>
     </ElForm>

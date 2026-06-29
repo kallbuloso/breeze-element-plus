@@ -4,6 +4,7 @@ defineProps({
   status: String
 })
 
+const { t } = useI18n({ useScope: 'global' })
 const form = useForm({
   email: '',
   password: '',
@@ -18,11 +19,11 @@ const submit = () => {
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Log in" />
+  <Head :title="t('auth.login.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Log in</template>
-    <template #description>Use your credentials to continue.</template>
+    <template #title>{{ t('auth.login.title') }}</template>
+    <template #description>{{ t('auth.login.description') }}</template>
 
     <ElAlert
       v-if="status"
@@ -38,7 +39,7 @@ const submit = () => {
       @submit.prevent="submit"
     >
       <ElFormItem
-        label="Email"
+        :label="t('common.email')"
         :error="form.errors.email"
       >
         <ElInput
@@ -51,13 +52,13 @@ const submit = () => {
       <ElFormItem :error="form.errors.password">
         <template #label>
           <span style="display: flex; justify-content: space-between; width: 100%">
-            Password
+            {{ t('common.password') }}
             <Link
               v-if="canResetPassword"
               :href="route('password.request')"
               style="color: var(--el-color-primary); text-decoration: none"
             >
-              Forgot?
+              {{ t('auth.login.forgot') }}
             </Link>
           </span>
         </template>
@@ -69,7 +70,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem>
-        <ElCheckbox v-model="form.remember">Remember me</ElCheckbox>
+        <ElCheckbox v-model="form.remember">{{ t('auth.login.remember') }}</ElCheckbox>
       </ElFormItem>
       <ElFormItem>
         <ElButton
@@ -78,7 +79,7 @@ const submit = () => {
           :loading="form.processing"
           style="width: 100%"
         >
-          Log in
+          {{ t('auth.login.submit') }}
         </ElButton>
       </ElFormItem>
     </ElForm>
@@ -88,7 +89,7 @@ const submit = () => {
         :href="route('register')"
         style="color: var(--el-color-primary); text-decoration: none"
       >
-        Create an account
+        {{ t('auth.login.createAccount') }}
       </Link>
     </p>
   </AppFormCard>

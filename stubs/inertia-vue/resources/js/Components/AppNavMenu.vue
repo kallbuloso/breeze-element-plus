@@ -10,6 +10,7 @@ const props = defineProps({
 
 const layout = useLayoutStore()
 const page = usePage()
+const { t } = useI18n({ useScope: 'global' })
 const pendingFeatureKey = ref(null)
 const isCollapsed = computed(() => !props.forceExpanded && layout.collapsed)
 
@@ -107,7 +108,7 @@ const logout = () => {
             popper-class="app-nav-flyout"
           >
             <template #reference>
-              <button class="app-nav-rail-button" type="button" :aria-label="group.label" @click="handleGroupClick(group)">
+              <button class="app-nav-rail-button" type="button" :aria-label="t(group.labelKey)" @click="handleGroupClick(group)">
                 <ElBadge v-if="group.badge" :is-dot="group.badge === true" :value="typeof group.badge === 'number' ? group.badge : undefined">
                   <AppIcon :icon="group.icon" width="20" height="20" />
                 </ElBadge>
@@ -116,10 +117,10 @@ const logout = () => {
             </template>
 
             <div class="app-nav-flyout-content">
-              <p class="app-nav-title">{{ group.label }}</p>
-              <button v-for="feature in group.features" :key="feature.key ?? feature.label" class="app-nav-feature" :class="{ active: itemIsActive(feature) }" type="button" @click="visitItem(feature)">
+              <p class="app-nav-title">{{ t(group.labelKey) }}</p>
+              <button v-for="feature in group.features" :key="feature.key ?? feature.labelKey" class="app-nav-feature" :class="{ active: itemIsActive(feature) }" type="button" @click="visitItem(feature)">
                 <AppIcon :icon="feature.icon" width="16" height="16" />
-                <span>{{ feature.label }}</span>
+                <span>{{ t(feature.labelKey) }}</span>
               </button>
             </div>
           </ElPopover>
@@ -128,7 +129,7 @@ const logout = () => {
 
       <ul class="app-nav-list">
         <li>
-          <ElTooltip content="Sair" placement="right" :show-after="220" :offset="12">
+          <ElTooltip :content="t('navigation.logout')" placement="right" :show-after="220" :offset="12">
             <button class="app-nav-rail-button" type="button" @click="logout">
               <AppIcon icon="ri:logout-box-r-line" width="20" height="20" />
             </button>
@@ -139,10 +140,10 @@ const logout = () => {
 
     <Transition name="app-nav-panel">
       <section v-if="!isCollapsed && activeGroup?.features.length" class="app-nav-panel">
-        <p class="app-nav-title">{{ activeGroup.label }}</p>
-        <button v-for="feature in activeGroup.features" :key="feature.key ?? feature.label" class="app-nav-feature" :class="{ active: itemIsActive(feature) }" type="button" @click="visitItem(feature)">
+        <p class="app-nav-title">{{ t(activeGroup.labelKey) }}</p>
+        <button v-for="feature in activeGroup.features" :key="feature.key ?? feature.labelKey" class="app-nav-feature" :class="{ active: itemIsActive(feature) }" type="button" @click="visitItem(feature)">
           <AppIcon :icon="feature.icon" width="16" height="16" />
-          <span>{{ feature.label }}</span>
+          <span>{{ t(feature.labelKey) }}</span>
         </button>
       </section>
     </Transition>

@@ -1,9 +1,9 @@
 import { createSharedComposable } from '@vueuse/core'
 
 const modes = [
-  { value: 'auto', label: 'System', icon: 'ri:computer-line' },
-  { value: 'light', label: 'Light', icon: 'ri:sun-line' },
-  { value: 'dark', label: 'Dark', icon: 'ri:moon-line' }
+  { value: 'auto', labelKey: 'theme.system', icon: 'ri:computer-line' },
+  { value: 'light', labelKey: 'theme.light', icon: 'ri:sun-line' },
+  { value: 'dark', labelKey: 'theme.dark', icon: 'ri:moon-line' }
 ]
 
 function buildTheme() {

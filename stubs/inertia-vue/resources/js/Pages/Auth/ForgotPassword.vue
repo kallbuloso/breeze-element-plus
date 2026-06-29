@@ -1,16 +1,17 @@
 <script setup>
 defineProps({ status: String })
 
+const { t } = useI18n({ useScope: 'global' })
 const form = useForm({ email: '' })
 const submit = () => form.post(route('password.email'))
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Forgot password" />
+  <Head :title="t('auth.forgotPassword.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Forgot password?</template>
-    <template #description>Enter your email and we will send you a password reset link.</template>
+    <template #title>{{ t('auth.forgotPassword.title') }}</template>
+    <template #description>{{ t('auth.forgotPassword.description') }}</template>
 
     <ElAlert
       v-if="status"
@@ -26,7 +27,7 @@ const submit = () => form.post(route('password.email'))
       @submit.prevent="submit"
     >
       <ElFormItem
-        label="Email"
+        :label="t('common.email')"
         :error="form.errors.email"
       >
         <ElInput
@@ -43,7 +44,7 @@ const submit = () => form.post(route('password.email'))
           :loading="form.processing"
           style="width: 100%"
         >
-          Email password reset link
+          {{ t('auth.forgotPassword.submit') }}
         </ElButton>
       </ElFormItem>
     </ElForm>
@@ -51,12 +52,12 @@ const submit = () => form.post(route('password.email'))
     <ElDivider />
 
     <p style="text-align: center; margin: 0; font-size: 14px; color: var(--el-text-color-secondary)">
-      Remembered your password?
+      {{ t('auth.forgotPassword.remembered') }}
       <Link
         :href="route('login')"
         style="color: var(--el-color-primary)"
       >
-        Log in
+        {{ t('auth.forgotPassword.login') }}
       </Link>
     </p>
   </AppFormCard>

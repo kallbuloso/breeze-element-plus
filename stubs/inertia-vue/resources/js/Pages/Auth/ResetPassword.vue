@@ -4,6 +4,7 @@ const props = defineProps({
   token: String
 })
 
+const { t } = useI18n({ useScope: 'global' })
 const form = useForm({
   token: props.token,
   email: props.email,
@@ -19,18 +20,18 @@ const submit = () => {
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Reset password" />
+  <Head :title="t('auth.resetPassword.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Reset password</template>
-    <template #description>Choose a new password for your account.</template>
+    <template #title>{{ t('auth.resetPassword.title') }}</template>
+    <template #description>{{ t('auth.resetPassword.description') }}</template>
 
     <ElForm
       label-position="top"
       @submit.prevent="submit"
     >
       <ElFormItem
-        label="Email"
+        :label="t('common.email')"
         :error="form.errors.email"
       >
         <ElInput
@@ -41,7 +42,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem
-        label="Password"
+        :label="t('common.password')"
         :error="form.errors.password"
       >
         <ElInput
@@ -52,7 +53,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem
-        label="Confirm password"
+        :label="t('common.confirmPassword')"
         :error="form.errors.password_confirmation"
       >
         <ElInput
@@ -69,7 +70,7 @@ const submit = () => {
           :loading="form.processing"
           style="width: 100%"
         >
-          Reset password
+          {{ t('auth.resetPassword.submit') }}
         </ElButton>
       </ElFormItem>
     </ElForm>

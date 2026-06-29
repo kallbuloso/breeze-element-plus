@@ -5,6 +5,7 @@ const form = useForm({
   password: '',
   password_confirmation: ''
 })
+const { t } = useI18n({ useScope: 'global' })
 
 const submit = () => {
   form.post(route('register'), {
@@ -14,18 +15,18 @@ const submit = () => {
 </script>
 
 <template layout="AuthLayout">
-  <Head title="Register" />
+  <Head :title="t('auth.register.pageTitle')" />
 
   <AppFormCard>
-    <template #title>Create account</template>
-    <template #description>Fill in the information below to get started.</template>
+    <template #title>{{ t('auth.register.title') }}</template>
+    <template #description>{{ t('auth.register.description') }}</template>
 
     <ElForm
       label-position="top"
       @submit.prevent="submit"
     >
       <ElFormItem
-        label="Name"
+        :label="t('common.name')"
         :error="form.errors.name"
       >
         <ElInput
@@ -35,7 +36,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem
-        label="Email"
+        :label="t('common.email')"
         :error="form.errors.email"
       >
         <ElInput
@@ -45,7 +46,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem
-        label="Password"
+        :label="t('common.password')"
         :error="form.errors.password"
       >
         <ElInput
@@ -56,7 +57,7 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem
-        label="Confirm password"
+        :label="t('common.confirmPassword')"
         :error="form.errors.password_confirmation"
       >
         <ElInput
@@ -73,7 +74,7 @@ const submit = () => {
           :loading="form.processing"
           style="width: 100%"
         >
-          Register
+          {{ t('auth.register.submit') }}
         </ElButton>
       </ElFormItem>
     </ElForm>
@@ -81,12 +82,12 @@ const submit = () => {
     <ElDivider />
 
     <p style="text-align: center; margin: 0; font-size: 14px; color: var(--el-text-color-secondary)">
-      Already registered?
+      {{ t('auth.register.alreadyRegistered') }}
       <Link
         :href="route('login')"
         style="color: var(--el-color-primary)"
       >
-        Log in
+        {{ t('auth.register.login') }}
       </Link>
     </p>
   </AppFormCard>

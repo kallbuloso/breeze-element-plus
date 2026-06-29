@@ -1,6 +1,7 @@
 <script setup>
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
+const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
@@ -14,10 +15,10 @@ const user = computed(() => page.props.auth?.user)
     <template #dropdown>
       <ElDropdownMenu>
         <ElDropdownItem>
-          <Link :href="route('profile.edit')" style="text-decoration: none">Profile</Link>
+          <Link :href="route('profile.edit')" style="text-decoration: none">{{ t('navigation.profile') }}</Link>
         </ElDropdownItem>
         <ElDropdownItem divided>
-          <Link :href="route('logout')" method="post" as="button" style="background: none; border: 0; padding: 0">Log Out</Link>
+          <Link :href="route('logout')" method="post" as="button" style="background: none; border: 0; padding: 0">{{ t('navigation.logout') }}</Link>
         </ElDropdownItem>
       </ElDropdownMenu>
     </template>

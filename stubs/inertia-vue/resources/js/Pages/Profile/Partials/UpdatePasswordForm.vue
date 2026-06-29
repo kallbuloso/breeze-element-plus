@@ -4,6 +4,7 @@ const form = useForm({
   password: '',
   password_confirmation: ''
 })
+const { t } = useI18n({ useScope: 'global' })
 
 const submit = () => {
   form.put(route('password.update'), {
@@ -16,20 +17,20 @@ const submit = () => {
 
 <template>
   <ElCard shadow="never">
-    <template #header>Update password</template>
+    <template #header>{{ t('profile.password.title') }}</template>
     <ElForm label-position="top" @submit.prevent="submit">
-      <ElFormItem label="Current password" :error="form.errors.current_password">
+      <ElFormItem :label="t('common.currentPassword')" :error="form.errors.current_password">
         <ElInput v-model="form.current_password" type="password" autocomplete="current-password" show-password />
       </ElFormItem>
-      <ElFormItem label="New password" :error="form.errors.password">
+      <ElFormItem :label="t('common.newPassword')" :error="form.errors.password">
         <ElInput v-model="form.password" type="password" autocomplete="new-password" show-password />
       </ElFormItem>
-      <ElFormItem label="Confirm password" :error="form.errors.password_confirmation">
+      <ElFormItem :label="t('common.confirmPassword')" :error="form.errors.password_confirmation">
         <ElInput v-model="form.password_confirmation" type="password" autocomplete="new-password" show-password />
       </ElFormItem>
       <ElSpace>
-        <ElButton type="primary" native-type="submit" :loading="form.processing">Save</ElButton>
-        <ElText v-if="form.recentlySuccessful" type="success">Saved.</ElText>
+        <ElButton type="primary" native-type="submit" :loading="form.processing">{{ t('common.save') }}</ElButton>
+        <ElText v-if="form.recentlySuccessful" type="success">{{ t('common.saved') }}</ElText>
       </ElSpace>
     </ElForm>
   </ElCard>
