@@ -409,10 +409,16 @@ class InstallCommand extends Command implements PromptsForMissingInput
             __DIR__.'/../../stubs/localization/resources/js/locales/'.$this->language.'.js',
             resource_path('js/locales/'.$this->language.'.js'),
         );
+        $files->copy(
+            __DIR__.'/../../stubs/localization/resources/js/messages/'.$this->language.'.js',
+            resource_path('js/locales/messages.js'),
+        );
 
         $files->put(
             resource_path('js/locales/index.js'),
-            "export { default } from './{$this->language}'".PHP_EOL,
+            "export { default } from './{$this->language}'".PHP_EOL
+            ."export { default as messages } from './messages'".PHP_EOL
+            ."export const locale = '{$this->language}'".PHP_EOL,
         );
     }
 
