@@ -6,6 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createPinia } from 'pinia'
 import { createSSRApp, h } from 'vue'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy'
+import { createAppI18n } from './locales/i18n'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
 
@@ -19,6 +20,7 @@ createServer((page) =>
       return createSSRApp({ render: () => h(App, props) })
         .use(plugin)
         .use(createPinia())
+        .use(createAppI18n())
         .use(ZiggyVue, {
           ...page.props.ziggy,
           location: new URL(page.props.ziggy.location)
