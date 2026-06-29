@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createPinia } from 'pinia'
 import { createApp, h } from 'vue'
 import { ZiggyVue } from '../../vendor/tightenco/ziggy'
+import { createAppI18n } from './locales/i18n'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
 
@@ -17,6 +18,7 @@ createInertiaApp({
     return createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(createPinia())
+      .use(createAppI18n())
       .use(ZiggyVue)
       .provide(ID_INJECTION_KEY, { prefix: Math.ceil(Math.random() * 10000), current: 0 })
       .provide(ZINDEX_INJECTION_KEY, { current: 0 })
