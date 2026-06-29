@@ -46,6 +46,7 @@ trait InstallsInertiaStacks
                 "vite" => "^8.0.14",
                 "vite-plugin-eslint2" => "^5.1.0",
                 'vue' => '^3.4.0',
+                'vue-i18n' => '^11.4.6',
                 'vue-tsc' => '^2.1.0',
             ] + $packages;
         });
