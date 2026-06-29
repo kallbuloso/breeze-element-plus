@@ -28,7 +28,8 @@ export default defineConfig({
         'pinia',
         '@vueuse/core',
         {
-          '@inertiajs/vue3': ['router', 'useForm', 'usePage']
+          '@inertiajs/vue3': ['router', 'useForm', 'usePage'],
+          'vue-i18n': ['useI18n']
         }
       ],
       dirs: ['./resources/js/composables', './resources/js/utils', './resources/js/Stores'],
