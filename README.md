@@ -127,9 +127,9 @@ Para uma instalacao nao interativa, informe o idioma com `--lang`:
 php artisan breeze-element-plus:install vue --lang=en
 ```
 
-Os idiomas disponiveis sao `en`, `es`, `pt` e `pt_BR`. Se `--lang` nao for informado em modo nao interativo, sera usado `pt_BR`. O instalador copia somente o diretorio escolhido para `lang/`, atualiza `APP_LOCALE`, `APP_FALLBACK_LOCALE` e `APP_FAKER_LOCALE`, e adiciona ao frontend somente o locale correspondente em `resources/js/locales/`.
+Os idiomas disponiveis sao `en`, `es`, `pt` e `pt_BR`. Se `--lang` nao for informado em modo nao interativo, sera usado `pt_BR`. O instalador copia somente o diretorio escolhido para `lang/`, atualiza `APP_LOCALE`, `APP_FALLBACK_LOCALE` e `APP_FAKER_LOCALE`, e adiciona ao frontend somente o locale e as mensagens correspondentes em `resources/js/locales/`.
 
-Na stack Vue, o idioma visual dos componentes e fornecido pelo locale correspondente do Element Plus.
+Na stack Vue, o idioma visual dos componentes e fornecido pelo locale correspondente do Element Plus. Os textos de autenticacao, perfil, navegacao, tema e layout usam Vue I18n em modo Composition API, com o mesmo idioma fixado durante a instalacao e suporte a renderizacao SSR.
 
 As traducoes espanholas e portuguesas foram adaptadas dos dados estaticos do [Laravel-Lang](https://github.com/Laravel-Lang/lang), distribuido sob licenca MIT. O aviso correspondente esta preservado em `stubs/localization/LICENSE-LARAVEL-LANG`.
 
