@@ -405,19 +405,20 @@ class InstallCommand extends Command implements PromptsForMissingInput
         }
 
         $files->ensureDirectoryExists(resource_path('js/locales'));
+        $files->ensureDirectoryExists(resource_path('js/locales/'.$this->language));
         $files->copy(
             __DIR__.'/../../stubs/localization/resources/js/locales/'.$this->language.'.js',
             resource_path('js/locales/'.$this->language.'.js'),
         );
         $files->copy(
-            __DIR__.'/../../stubs/localization/resources/js/messages/'.$this->language.'.js',
-            resource_path('js/locales/messages.js'),
+            __DIR__.'/../../stubs/localization/resources/js/locales/'.$this->language.'/message.js',
+            resource_path('js/locales/'.$this->language.'/message.js'),
         );
 
         $files->put(
             resource_path('js/locales/index.js'),
             "export { default } from './{$this->language}'".PHP_EOL
-            ."export { default as messages } from './messages'".PHP_EOL
+            ."export { default as messages } from './{$this->language}/message'".PHP_EOL
             ."export const locale = '{$this->language}'".PHP_EOL,
         );
     }
