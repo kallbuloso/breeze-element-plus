@@ -19,6 +19,8 @@ trait InstallsInertiaStacks
         }
 
         $this->updateNodePackages(function ($packages) {
+            unset($packages['@tailwindcss/vite'], $packages['tailwindcss']);
+
             return [
                 '@iconify/vue' => '^5.0.0',
                 '@inertiajs/vue3' => '^2.0.0',
