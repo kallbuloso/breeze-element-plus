@@ -362,9 +362,11 @@ class InstallCommand extends Command implements PromptsForMissingInput
         $files = new Filesystem;
 
         $files->copyDirectory(__DIR__.'/../../stubs/auth/app/Models', app_path('Models'));
+        $files->copyDirectory(__DIR__.'/../../stubs/auth/app/Notifications', app_path('Notifications'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/factories', database_path('factories'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/migrations', database_path('migrations'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/seeders', database_path('seeders'));
+        $files->copyDirectory(__DIR__.'/../../stubs/auth/resources/views/mail', resource_path('views/mail'));
     }
 
     protected function installLocalizationScaffolding(bool $withFrontend = false): void

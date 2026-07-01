@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -20,7 +20,18 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPassword::class, function (ResetPassword $notification) use ($user) {
+            $message = $notification->toMail($user);
+            $html = app('mailer')->render($message->view['html'], $message->data());
+            $text = app('mailer')->render($message->view['text'], $message->data());
+
+            $this->assertSame(__('mail.password_reset.subject'), $message->subject);
+            $this->assertStringContainsString(__('mail.password_reset.action'), $html);
+            $this->assertStringStartsWith(config('app.frontend_url').'/password-reset/', $message->viewData['actionUrl']);
+            $this->assertStringContainsString($message->viewData['actionUrl'], $text);
+
+            return true;
+        });
     }
 
     public function test_password_can_be_reset_with_valid_token(): void

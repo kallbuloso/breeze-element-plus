@@ -14,8 +14,26 @@ const { t } = useI18n({ useScope: 'global' })
 <template layout="AuthenticatedLayout">
   <Head :title="t('profile.pageTitle')" />
   <div style="display: grid; gap: 16px; max-width: 920px">
-    <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
-    <UpdatePasswordForm />
-    <DeleteUserForm />
+    <el-tabs class="c-tabs" tab-position="left">
+      <el-tab-pane :label="t('profile.information.menu')">
+        <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
+      </el-tab-pane>
+      <el-tab-pane :label="t('profile.password.menu')">
+        <UpdatePasswordForm />
+      </el-tab-pane>
+      <el-tab-pane :label="t('profile.delete.menu')">
+        <DeleteUserForm />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
+
+<style scoped>
+.c-tabs > .el-tabs__content {
+  padding: 56px;
+}
+
+.el-tabs--left .el-tabs__content {
+  height: 100%;
+}
+</style>

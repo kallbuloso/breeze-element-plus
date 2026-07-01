@@ -60,14 +60,17 @@ export default {
   profile: {
     pageTitle: 'Perfil',
     information: {
+      menu: 'Perfil',
       title: 'Información del perfil',
       unverifiedEmail: 'Tu dirección de correo electrónico no está verificada.',
       resendVerification: 'Haz clic aquí para reenviar el correo de verificación.'
     },
     password: {
+      menu: 'Contraseña',
       title: 'Actualizar contraseña'
     },
     delete: {
+      menu: 'Eliminar cuenta',
       title: 'Eliminar cuenta',
       description: 'Al eliminar tu cuenta, todos sus recursos y datos se eliminarán permanentemente.',
       confirmation: 'Introduce tu contraseña para confirmar que deseas eliminar permanentemente tu cuenta.',

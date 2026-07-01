@@ -60,14 +60,17 @@ export default {
   profile: {
     pageTitle: 'Profile',
     information: {
+      menu: 'Profile',
       title: 'Profile information',
       unverifiedEmail: 'Your email address is unverified.',
       resendVerification: 'Click here to resend the verification email.'
     },
     password: {
+      menu: 'Password',
       title: 'Update password'
     },
     delete: {
+      menu: 'Delete account',
       title: 'Delete account',
       description: 'Once your account is deleted, all of its resources and data will be permanently deleted.',
       confirmation: 'Please enter your password to confirm you would like to permanently delete your account.',

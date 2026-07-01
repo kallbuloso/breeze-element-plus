@@ -60,14 +60,17 @@ export default {
   profile: {
     pageTitle: 'Perfil',
     information: {
+      menu: 'Perfil',
       title: 'Informações do perfil',
       unverifiedEmail: 'Seu endereço de e-mail ainda não foi verificado.',
       resendVerification: 'Clique aqui para reenviar o e-mail de verificação.'
     },
     password: {
+      menu: 'Senha',
       title: 'Atualizar senha'
     },
     delete: {
+      menu: 'Excluir conta',
       title: 'Excluir conta',
       description: 'Ao excluir sua conta, todos os recursos e dados associados a ela serão excluídos permanentemente.',
       confirmation: 'Informe sua senha para confirmar que deseja excluir permanentemente sua conta.',

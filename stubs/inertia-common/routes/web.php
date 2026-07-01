@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MailPreviewController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,10 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/_mail-preview/{type}', MailPreviewController::class)
+    ->whereIn('type', ['verification', 'reset-password'])
+    ->name('mail.preview');
 // Esta é uma rota de exemplo para exibir páginas de erro personalizadas durante o desenvolvimento. Ela só será registrada se o ambiente for de teste (por exemplo, quando o domínio termina com ".test").
 if (str_ends_with((string) parse_url(env('APP_URL'), PHP_URL_HOST), '.test')) {
     Route::get('/_errors/{status}', function (int $status) {
