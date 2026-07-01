@@ -32,7 +32,7 @@ const submit = () => form.patch(route('profile.update'))
       </ElAlert>
       <ElSpace>
         <ElButton type="primary" native-type="submit" :loading="form.processing">{{ t('common.save') }}</ElButton>
-        <ElText v-if="form.recentlySuccessful" type="success">{{ t('common.saved') }}</ElText>
+        <!-- <ElText v-if="form.recentlySuccessful" type="success">{{ t('common.saved') }}</ElText> -->
       </ElSpace>
     </ElForm>
   </ElCard>
