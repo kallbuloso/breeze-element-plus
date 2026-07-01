@@ -2,6 +2,9 @@ import vuePrettierConfig from '@vue/eslint-config-prettier'
 import pluginPrettier from 'eslint-plugin-prettier'
 import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
+import { readFileSync } from 'node:fs'
+
+const prettierConfig = JSON.parse(readFileSync(new URL('./.prettierrc', import.meta.url), 'utf8'))
 
 export default [
   {
@@ -21,7 +24,7 @@ export default [
       }
     },
     rules: {
-      'prettier/prettier': ['error'],
+      'prettier/prettier': ['error', prettierConfig],
       'vue/block-lang': 'off',
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       'vue/multi-word-component-names': 'off',
