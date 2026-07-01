@@ -55,8 +55,9 @@ trait InstallsInertiaStacks
             return [
                 'build' => 'vite build',
                 'dev' => 'vite',
-                'format' => 'prettier . --write',
-                'lint' => 'eslint resources/js --ext .js,.vue --fix',
+                'format' => 'prettier --write "resources/js/**/*.{js,vue}" "*.js" "*.json" "*.md" ".prettierrc" ".vscode/*.json"',
+                'format:check' => 'prettier --check "resources/js/**/*.{js,vue}" "*.js" "*.json" "*.md" ".prettierrc" ".vscode/*.json"',
+                'lint' => 'eslint resources/js --ext .js,.vue --ignore-pattern .gitignore --fix',
                 'start' => 'vite',
             ] + $scripts;
         });
