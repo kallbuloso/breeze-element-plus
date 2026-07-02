@@ -15,7 +15,7 @@ export default {
       pageTitle: 'Entrar',
       title: 'Entrar',
       description: 'Use suas credenciais para continuar.',
-      forgot: 'Esqueceu?',
+      forgot: 'Esqueceu a senha?',
       remember: 'Lembrar de mim',
       submit: 'Entrar',
       createAccount: 'Criar uma conta'

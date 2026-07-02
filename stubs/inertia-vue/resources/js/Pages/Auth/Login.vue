@@ -50,18 +50,16 @@ const submit = () => {
         />
       </ElFormItem>
       <ElFormItem :error="form.errors.password">
-        <template #label>
-          <span style="display: flex; justify-content: space-between; width: 100%">
-            {{ t('common.password') }}
-            <Link
-              v-if="canResetPassword"
-              :href="route('password.request')"
-              style="color: var(--el-color-primary); text-decoration: none"
-            >
-              {{ t('auth.login.forgot') }}
-            </Link>
-          </span>
-        </template>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; width: 100%; margin-bottom: 6px; line-height: 1.4">
+          <label style="font-size: var(--el-form-label-font-size); font-weight: 500; color: var(--el-text-color-regular)">{{ t('common.password') }}</label>
+          <Link
+            v-if="canResetPassword"
+            :href="route('password.request')"
+            style="font-size: 12px; color: var(--el-color-primary)"
+          >
+            {{ t('auth.login.forgot') }}
+          </Link>
+        </div>
         <ElInput
           v-model="form.password"
           type="password"
