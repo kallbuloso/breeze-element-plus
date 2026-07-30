@@ -3,3 +3,6 @@ composer.lock
 .agents
 .DS_Store
 Thumbs.db
+/.hermes
+CLAUDE.md
+AGENTS.md
