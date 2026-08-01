@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Facades\Toast;
+use App\Http\Requests\{{Model}}Request;
+use App\Models\{{Model}};
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class {{Model}}Controller extends Controller
+{
+    public function index(Request $request): JsonResponse|Response
+    {
+        $this->ensureOwner($request);
+
+        $query = {{Model}}::query();
+        $searchable = {{Model}}::searchable();
+        $search = trim((string) $request->string('search'));
+
+        if ($search !== '' && $searchable !== []) {
+            $query->where(function (Builder $query) use ($search, $searchable): void {
+                foreach ($searchable as $column) {
+                    $query->orWhere($column, 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $sortBy = (string) $request->input('sort_by', 'id');
+        $sortBy = in_array($sortBy, array_merge(['id'], $searchable), true) ? $sortBy : 'id';
+        $sortDirection = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+        $limit = min(max((int) $request->input('limit', 10), 1), 100);
+        $items = $query->orderBy($sortBy, $sortDirection)->paginate($limit);
+
+        if ($request->wantsJson()) {
+            return response()->json($items);
+        }
+
+        return Inertia::render('{{View}}/Index');
+    }
+
+    public function create(Request $request): Response
+    {
+        $this->ensureOwner($request);
+
+        return Inertia::render('{{View}}/Create');
+    }
+
+    public function store({{Model}}Request $request): RedirectResponse
+    {
+        {{Model}}::create($request->validated());
+
+        return redirect()->route('{{RouteName}}.index')->toast('{{Singular}} criado com sucesso.', 'success');
+    }
+
+    public function show(Request $request, {{Model}} ${{model}}): Response
+    {
+        $this->ensureOwner($request);
+
+        return Inertia::render('{{View}}/Show', ['{{model}}' => ${{model}}]);
+    }
+
+    public function edit(Request $request, {{Model}} ${{model}}): Response
+    {
+        $this->ensureOwner($request);
+
+        return Inertia::render('{{View}}/Edit', ['{{model}}' => ${{model}}]);
+    }
+
+    public function update({{Model}}Request $request, {{Model}} ${{model}}): RedirectResponse
+    {
+        ${{model}}->update($request->validated());
+
+        return redirect()->route('{{RouteName}}.index')->toast('{{Singular}} atualizado com sucesso.', 'success');
+    }
+
+    public function destroy(Request $request, {{Model}} ${{model}}): RedirectResponse
+    {
+        $this->ensureOwner($request);
+
+        ${{model}}->delete();
+
+        return redirect()->route('{{RouteName}}.index')->toast('{{Singular}} removido com sucesso.', 'success');
+    }
+
+    private function ensureOwner(Request $request): void
+    {
+        abort_unless((bool) $request->user()?->is_owner, 403);
+    }
+}

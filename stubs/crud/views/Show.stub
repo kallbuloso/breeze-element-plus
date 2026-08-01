@@ -1,0 +1,20 @@
+<script setup>
+defineProps({
+  {{model}}: { type: Object, required: true }
+})
+</script>
+
+<template layout="AuthenticatedLayout">
+  <Head title="{{Singular}}" />
+  <ElCard shadow="never">
+    <template #header>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <strong>{{Singular}}</strong>
+        <Link :href="route('{{RouteName}}.edit', {{model}}.id)"><ElButton type="primary">Editar</ElButton></Link>
+      </div>
+    </template>
+    <ElDescriptions :column="1" border>
+{{ShowFields}}
+    </ElDescriptions>
+  </ElCard>
+</template>

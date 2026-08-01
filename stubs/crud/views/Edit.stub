@@ -1,0 +1,15 @@
+<script setup>
+import Form from './_Form.vue'
+
+defineProps({
+  {{model}}: { type: Object, required: true }
+})
+</script>
+
+<template layout="AuthenticatedLayout">
+  <Head title="Editar {{Singular}}" />
+  <ElCard shadow="never">
+    <template #header><strong>Editar {{Singular}}</strong></template>
+    <Form :{{model}}="{{model}}" />
+  </ElCard>
+</template>

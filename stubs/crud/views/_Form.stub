@@ -1,0 +1,32 @@
+<script setup>
+const props = defineProps({
+  {{model}}: { type: Object, default: null }
+})
+
+const isEdit = computed(() => props.{{model}} !== null)
+const form = useForm({
+{{FormData}}
+  ...(props.{{model}} ?? {})
+})
+
+const submit = () => {
+  if (isEdit.value) {
+    form.put(route('{{RouteName}}.update', props.{{model}}.id))
+    return
+  }
+
+  form.post(route('{{RouteName}}.store'))
+}
+</script>
+
+<template>
+  <ElForm label-position="top" @submit.prevent="submit">
+{{FormFields}}
+    <ElFormItem>
+      <ElSpace>
+        <Link :href="route('{{RouteName}}.index')"><ElButton>Cancelar</ElButton></Link>
+        <ElButton type="primary" native-type="submit" :loading="form.processing">{{ isEdit ? 'Atualizar' : 'Criar' }}</ElButton>
+      </ElSpace>
+    </ElFormItem>
+  </ElForm>
+</template>

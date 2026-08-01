@@ -1,0 +1,11 @@
+<script setup>
+import Form from './_Form.vue'
+</script>
+
+<template layout="AuthenticatedLayout">
+  <Head title="Novo {{Singular}}" />
+  <ElCard shadow="never">
+    <template #header><strong>Novo {{Singular}}</strong></template>
+    <Form />
+  </ElCard>
+</template>

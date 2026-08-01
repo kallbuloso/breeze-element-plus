@@ -1,0 +1,63 @@
+<script setup>
+const data = ref({ data: [], current_page: 1, per_page: 10, total: 0 })
+const loading = ref(false)
+const search = ref('')
+const page = ref(1)
+
+const loadItems = async () => {
+  loading.value = true
+  const params = new URLSearchParams({ page: page.value, search: search.value })
+
+  try {
+    const response = await fetch(`${route('{{RouteName}}.index')}?${params.toString()}`, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    data.value = await response.json()
+  } catch (error) {
+    ElMessage.error(`Erro ao carregar {{Plural}}: ${error.message}`)
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(search, () => {
+  page.value = 1
+  loadItems()
+})
+
+onMounted(loadItems)
+</script>
+
+<template layout="AuthenticatedLayout">
+  <Head title="{{Plural}}" />
+
+  <ElCard shadow="never">
+    <template #header>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <strong>{{Plural}}</strong>
+        <Link :href="route('{{RouteName}}.create')">
+          <ElButton type="primary" :icon="iconify('ri:add-line')">Novo</ElButton>
+        </Link>
+      </div>
+    </template>
+
+    <ElInput v-model="search" clearable placeholder="Buscar..." style="max-width: 320px; margin-bottom: 16px" />
+    <ElTable v-loading="loading" :data="data.data" stripe>
+      <ElTableColumn prop="id" label="ID" width="80" />
+{{TableColumns}}
+      <ElTableColumn label="Ações" width="130" fixed="right">
+        <template #default="{ row }">
+          <ElSpace>
+            <Link :href="route('{{RouteName}}.show', row.id)"><AppIcon icon="ri:eye-line" /></Link>
+            <Link :href="route('{{RouteName}}.edit', row.id)"><AppIcon icon="ri:edit-line" /></Link>
+            <ElPopconfirm title="Confirma exclusão?" @confirm="router.delete(route('{{RouteName}}.destroy', row.id), { onSuccess: loadItems })">
+              <template #reference><ElButton text type="danger"><AppIcon icon="ri:delete-bin-line" /></ElButton></template>
+            </ElPopconfirm>
+          </ElSpace>
+        </template>
+      </ElTableColumn>
+    </ElTable>
+    <ElPagination v-if="data.total" v-model:current-page="page" :page-size="data.per_page" :total="data.total" layout="prev, pager, next" style="margin-top: 16px" @current-change="loadItems" />
+  </ElCard>
+</template>
