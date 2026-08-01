@@ -95,6 +95,25 @@ npm run format
 npm run build
 ```
 
+## Gerador de CRUD
+
+Depois de instalar a stack `vue` e criar/migrar uma tabela, gere um CRUD baseado no schema existente:
+
+```bash
+php artisan breeze-element-plus:crud products \
+  --group=catalog \
+  --group-label="Catálogo" \
+  --singular="Produto" \
+  --plural="Produtos" \
+  --icon=ri:box-3-line
+```
+
+O comando e exclusivo para a stack Vue. Ele gera Model, Form Request, Controller, Factory, Seeder e as paginas Inertia/Vue (`Index`, `Create`, `Edit`, `Show` e `_Form`). Tambem registra uma `Route::resource`, adiciona o item na navegacao e inclui os rótulos no locale frontend ativo.
+
+Use `--dry-run` para conferir todas as alteracoes sem escrever arquivos e `--force` para substituir arquivos gerados que ja existem. Sem `--force`, arquivos existentes diferentes serao preservados mediante confirmacao. O comando pode receber `--skip-format` para pular a orientacao de formatacao apos a geracao.
+
+O schema nao revela regras de negocio. Revise os campos de factory, regras de validacao, relacionamentos e controles de formulario antes de usar o resultado em producao. Autorizacao, permissoes, tenancy, migrations, upload de arquivos e carregamento de opcoes para chaves estrangeiras sao propositalmente deixados fora do gerador.
+
 Para desenvolvimento:
 
 ```bash
