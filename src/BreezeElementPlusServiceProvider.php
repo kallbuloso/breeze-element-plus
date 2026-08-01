@@ -30,6 +30,7 @@ class BreezeElementPlusServiceProvider extends ServiceProvider implements Deferr
 
         $this->commands([
             Console\InstallCommand::class,
+            Console\MakeCrudCommand::class,
         ]);
     }
 
@@ -40,6 +41,9 @@ class BreezeElementPlusServiceProvider extends ServiceProvider implements Deferr
      */
     public function provides()
     {
-        return [Console\InstallCommand::class];
+        return [
+            Console\InstallCommand::class,
+            Console\MakeCrudCommand::class,
+        ];
     }
 }
