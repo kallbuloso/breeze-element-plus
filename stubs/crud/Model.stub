@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+{{TenantUse}}
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class {{Model}} extends Model
 {
-    use HasFactory;
+    use HasFactory{{TenantTrait}};
 
     protected $table = '{{Table}}';
 

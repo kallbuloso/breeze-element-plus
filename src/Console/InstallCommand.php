@@ -19,7 +19,7 @@ use function Laravel\Prompts\select;
 #[AsCommand(name: 'breeze-element-plus:install')]
 class InstallCommand extends Command implements PromptsForMissingInput
 {
-    use InstallsApiStack, InstallsInertiaStacks;
+    use InstallsApiStack, InstallsInertiaStacks, InstallsTenancy;
 
     /**
      * The name and signature of the console command.
@@ -31,6 +31,7 @@ class InstallCommand extends Command implements PromptsForMissingInput
                             {--ssr : Indicates if Inertia SSR support should be installed}
                             {--eslint : Indicates if ESLint with Prettier should be installed}
                             {--lang= : Application language (en, es, pt, pt_BR)}
+                            {--tenancy= : Application tenancy mode (single or multi)}
                             {--composer=global : Absolute path to the Composer binary which should be used to install packages}';
 
     /**
@@ -42,6 +43,8 @@ class InstallCommand extends Command implements PromptsForMissingInput
 
     protected string $language = 'pt_BR';
 
+    protected string $tenancy = 'single';
+
     /**
      * Execute the console command.
      *
@@ -50,6 +53,10 @@ class InstallCommand extends Command implements PromptsForMissingInput
     public function handle()
     {
         if (! $this->resolveLanguage()) {
+            return 1;
+        }
+
+        if (! $this->resolveTenancy()) {
             return 1;
         }
 
@@ -91,6 +98,35 @@ class InstallCommand extends Command implements PromptsForMissingInput
         }
 
         $this->language = $language;
+
+        return true;
+    }
+
+    protected function resolveTenancy(): bool
+    {
+        $supported = [
+            'single' => 'Single tenant',
+            'multi' => 'Multitenancy',
+        ];
+        $tenancy = trim((string) $this->option('tenancy'));
+
+        if ($tenancy === '' && $this->input->isInteractive()) {
+            $tenancy = select(
+                label: 'Application single or multitenancy?',
+                options: $supported,
+                default: 'single',
+            );
+        }
+
+        $tenancy = $tenancy === '' ? 'single' : $tenancy;
+
+        if (! array_key_exists($tenancy, $supported)) {
+            $this->components->error('Invalid tenancy mode: '.$tenancy.'. Supported modes are: '.implode(', ', array_keys($supported)).'.');
+
+            return false;
+        }
+
+        $this->tenancy = $tenancy;
 
         return true;
     }
@@ -361,12 +397,26 @@ class InstallCommand extends Command implements PromptsForMissingInput
     {
         $files = new Filesystem;
 
+        $this->installBreezeElementPlusConfiguration();
+
         $files->copyDirectory(__DIR__.'/../../stubs/auth/app/Models', app_path('Models'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/app/Notifications', app_path('Notifications'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/factories', database_path('factories'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/migrations', database_path('migrations'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/database/seeders', database_path('seeders'));
         $files->copyDirectory(__DIR__.'/../../stubs/auth/resources/views/mail', resource_path('views/mail'));
+
+        $this->installTenancyScaffolding();
+    }
+
+    protected function installBreezeElementPlusConfiguration(): void
+    {
+        $stub = file_get_contents(__DIR__.'/../../stubs/tenancy/config/breeze-element-plus.php');
+
+        (new Filesystem)->put(
+            config_path('breeze-element-plus.php'),
+            str_replace('{{TenancyMode}}', $this->tenancy, $stub),
+        );
     }
 
     protected function installLocalizationScaffolding(bool $withFrontend = false): void

@@ -173,6 +173,8 @@ class MakeCrudCommand extends Command
             'groupLabel' => $groupLabel,
             'icon' => trim((string) $this->option('icon')) ?: (new IconSuggester)->suggest($model),
             'columns' => $this->schema->columns($table),
+            'tenantScoped' => config('breeze-element-plus.tenancy') === 'multi'
+                && $this->schema->hasTenantForeignKey($table),
         ];
     }
 
@@ -220,16 +222,25 @@ class MakeCrudCommand extends Command
             '{{Searchable}}' => $this->searchable(),
             '{{FactoryFields}}' => $this->factoryFields(),
             '{{FormData}}' => $this->formData(),
+            '{{FormModelData}}' => $this->formModelData(),
             '{{FormFields}}' => $this->formFields(),
             '{{TableColumns}}' => $this->tableColumns(),
             '{{ShowFields}}' => $this->showFields(),
+            '{{TenantUse}}' => $this->context['tenantScoped'] ? "use App\\Traits\\BelongsToTenant;\n" : '',
+            '{{TenantTrait}}' => $this->context['tenantScoped'] ? ', BelongsToTenant' : '',
+            '{{TenantFactoryUse}}' => $this->context['tenantScoped'] ? "use App\\Models\\Tenant;\n" : '',
         ];
     }
 
     /** @return array<int, array<string, mixed>> */
     private function editableColumns(): array
     {
-        return array_values(array_filter($this->context['columns'], static fn (array $column): bool => ! in_array($column['name'], ['id', 'created_at', 'updated_at', 'deleted_at', 'remember_token'], true)));
+        return array_values(array_filter($this->context['columns'], function (array $column): bool {
+            $excluded = ['id', 'created_at', 'updated_at', 'deleted_at', 'remember_token'];
+
+            return ! in_array($column['name'], $excluded, true)
+                && (! $this->context['tenantScoped'] || $column['name'] !== 'tenant_id');
+        }));
     }
 
     private function fillable(): string
@@ -317,6 +328,10 @@ class MakeCrudCommand extends Command
             $fields[] = "            '{$column['name']}' => {$value},";
         }
 
+        if ($this->context['tenantScoped']) {
+            array_unshift($fields, "            'tenant_id' => fn () => Tenant::factory(),");
+        }
+
         return implode(PHP_EOL, $fields);
     }
 
@@ -330,6 +345,16 @@ class MakeCrudCommand extends Command
         }
 
         return implode(PHP_EOL, $fields);
+    }
+
+    private function formModelData(): string
+    {
+        $fields = implode(', ', array_map(
+            static fn (array $column): string => "'{$column['name']}'",
+            $this->editableColumns(),
+        ));
+
+        return "  ...Object.fromEntries([{$fields}].map((field) => [field, props.{$this->context['modelVariable']}?.[field] ?? ''])),";
     }
 
     private function formFields(): string
@@ -384,13 +409,12 @@ class MakeCrudCommand extends Command
             if (str_contains($content, "// breeze-element-plus:crud {$model}")) {
                 return $content;
             }
-            if (! str_contains($content, "Route::middleware(['auth', 'verified'])->group(function () {")) {
-                $this->components->error('Could not find the authenticated route group. Routes were not changed.');
-
-                return $content;
-            }
             if (! str_contains($content, $import)) {
                 $content = preg_replace('/<\?php\R/', "<?php\n\n{$import}\n", $content, 1) ?? $content;
+            }
+
+            if (! str_contains($content, "Route::middleware(['auth', 'verified'])->group(function () {")) {
+                return rtrim($content)."\n\nRoute::middleware(['auth', 'verified'])->group(function () {\n{$block}\n});\n";
             }
 
             return preg_replace("/(Route::middleware\(\['auth', 'verified'\]\)->group\(function \(\) \{)(.*?)(\n\}\);)/s", "$1$2\n\n{$block}$3", $content, 1) ?? $content;

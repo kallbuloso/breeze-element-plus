@@ -48,6 +48,15 @@ class SchemaInspector
         return null;
     }
 
+    public function hasTenantForeignKey(string $table): bool
+    {
+        $foreignKey = $this->foreignKeyFor($table, 'tenant_id');
+
+        return $foreignKey !== null
+            && ($foreignKey['foreign_table'] ?? null) === 'tenants'
+            && in_array('id', $foreignKey['foreign_columns'] ?? [], true);
+    }
+
     /** @param array<string, mixed> $column @param array<string, mixed>|null $foreignKey */
     public function classify(array $column, ?array $foreignKey = null): string
     {

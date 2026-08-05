@@ -1,21 +1,21 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Database\Factories;
 
-use App\Models\{{Model}};
-{{TenantFactoryUse}}
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class {{Model}}Factory extends Factory
+/**
+ * @extends Factory<Tenant>
+ */
+class TenantFactory extends Factory
 {
-    protected $model = {{Model}}::class;
+    protected $model = Tenant::class;
 
     public function definition(): array
     {
         return [
-{{FactoryFields}}
+            'name' => fake()->company(),
         ];
     }
 }

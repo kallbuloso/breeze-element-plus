@@ -136,6 +136,25 @@ php artisan breeze-element-plus:install api
 
 A stack API instala Sanctum, rotas, controllers, requests, testes e a estrutura de autenticacao compartilhada.
 
+## Tenancy opcional
+
+Por padrao, a instalacao e `single` e nao adiciona tabelas, traits ou scopes de tenancy:
+
+```bash
+php artisan breeze-element-plus:install vue --tenancy=single
+```
+
+Para instalar a base de multitenancy por linhas no mesmo banco de dados, use `--tenancy=multi`:
+
+```bash
+php artisan breeze-element-plus:install vue --tenancy=multi
+php artisan breeze-element-plus:install api --tenancy=multi
+```
+
+No modo `multi`, o pacote instala a tabela `tenants`, adiciona `tenant_id` ao usuario, cria um tenant para cada novo registro e fornece `App\Traits\BelongsToTenant` com `App\Scopes\TenantScope`. Apenas modelos que declarem explicitamente `use BelongsToTenant;` recebem o filtro global e o preenchimento automatico de `tenant_id`.
+
+O registro padrao continua exigindo e-mail globalmente unico, mesmo que o schema permita um indice composto por tenant. Nao altere essa regra para permitir o mesmo e-mail em tenants diferentes ate implementar uma identificacao explicita de tenant nos fluxos de login e redefinicao de senha. Onboarding empresarial, selecao de contas, permissions/policies, rotas por dominio e UI de administracao de tenants ficam fora do escopo deste starter kit.
+
 ## Idiomas
 
 O instalador permite selecionar o idioma preferencial da aplicacao. Em modo interativo, `pt_BR` aparece como opcao padrao.

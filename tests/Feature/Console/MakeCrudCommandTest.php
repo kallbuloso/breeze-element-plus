@@ -108,4 +108,25 @@ class MakeCrudCommandTest extends TestCase
         $this->assertStringContainsString('ensureOwner', $controller);
         $this->assertStringContainsString('is_owner', $request);
     }
+
+    public function test_it_adds_a_verified_route_group_when_the_application_only_has_dashboard_middleware(): void
+    {
+        $this->writeFixtureFile('routes/web.php', <<<'PHP'
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::get('/dashboard', fn () => null)->middleware(['auth', 'verified'])->name('dashboard');
+PHP);
+
+        $this->artisan('breeze-element-plus:crud', [
+            'table' => 'products',
+            '--force' => true,
+            '--skip-format' => true,
+        ])->assertExitCode(0);
+
+        $routes = (string) file_get_contents(base_path('routes/web.php'));
+        $this->assertStringContainsString("Route::middleware(['auth', 'verified'])->group(function () {", $routes);
+        $this->assertStringContainsString("Route::resource('products', ProductController::class);", $routes);
+    }
 }

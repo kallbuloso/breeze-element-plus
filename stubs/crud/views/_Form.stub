@@ -6,7 +6,7 @@ const props = defineProps({
 const isEdit = computed(() => props.{{model}} !== null)
 const form = useForm({
 {{FormData}}
-  ...(props.{{model}} ?? {})
+{{FormModelData}}
 })
 
 const submit = () => {
